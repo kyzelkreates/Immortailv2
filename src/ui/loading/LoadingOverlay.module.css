@@ -6,14 +6,22 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 24px;
+  gap: 16px;
   z-index: 9998;
 }
 
+.paw {
+  font-size: 44px;
+  filter: drop-shadow(0 0 24px rgba(201,162,39,0.7));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .logo {
-  font-size: 48px;
+  font-size: 28px;
   font-weight: 900;
-  letter-spacing: 0.18em;
+  letter-spacing: 0.2em;
   background: linear-gradient(105deg, #8b6914 0%, #ffd700 30%, #fffacd 50%, #ffd700 70%, #8b6914 100%);
   background-size: 200% auto;
   -webkit-background-clip: text;
@@ -22,39 +30,31 @@
   animation: shimmer 2.5s linear infinite;
 }
 
-.paw {
-  font-size: 40px;
-  animation: pulse 1.8s ease-in-out infinite;
-  filter: drop-shadow(0 0 20px rgba(201,162,39,0.6));
-}
-
-.spinner {
-  width: 36px;
-  height: 36px;
-  border: 2px solid rgba(201,162,39,0.15);
-  border-top-color: #c9a227;
-  border-radius: 50%;
-  animation: spin 0.9s linear infinite;
-}
-
 .message {
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 600;
-  letter-spacing: 0.16em;
+  letter-spacing: 0.18em;
   text-transform: uppercase;
   color: var(--silver-dark);
+  margin: 0;
+}
+
+.progressTrack {
+  width: 140px;
+  height: 2px;
+  background: rgba(255,255,255,0.06);
+  border-radius: 1px;
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  background: linear-gradient(90deg, #c9a227, #ffd700);
+  box-shadow: 0 0 8px rgba(201,162,39,0.6);
+  border-radius: 1px;
 }
 
 @keyframes shimmer {
   0%   { background-position: 0% center; }
   100% { background-position: 200% center; }
-}
-
-@keyframes pulse {
-  0%, 100% { transform: scale(1); opacity: 0.8; }
-  50%       { transform: scale(1.12); opacity: 1; }
-}
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
 }

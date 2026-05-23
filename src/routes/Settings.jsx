@@ -1,7 +1,6 @@
 // ================================================================
 // IMMORTAIL™ — SETTINGS ROUTE
-// App preferences + full AI provider configuration.
-// Ollama, OpenAI-compatible, custom endpoint.
+// Metallic gold/silver. AI config + app preferences.
 // ================================================================
 
 import React, { useState, useCallback } from 'react';
@@ -33,30 +32,27 @@ export default function Settings() {
   const saveAiSettings = useCallback(async () => {
     try {
       await updateAiSettings(aiSettings);
-      showToast('AI settings saved', 'success');
-    } catch (err) {
-      showToast(`Save failed: ${err.message}`, 'error');
-    }
+      showToast('AI settings saved ✦', 'success');
+    } catch (err) { showToast(`Save failed: ${err.message}`, 'error'); }
   }, [aiSettings]);
 
   const testConnection = useCallback(async () => {
-    setTesting(true);
-    setTestResult(null);
+    setTesting(true); setTestResult(null);
     try {
       await updateAiSettings(aiSettings);
       const result = await setupAiProvider();
-      setTestResult(result.ready ? { ok: true, msg: 'Connection successful' } : { ok: false, msg: 'Could not connect — check URL/model' });
+      setTestResult(result.ready
+        ? { ok: true, msg: 'Connection successful' }
+        : { ok: false, msg: 'Could not connect — check URL/model' });
     } catch (err) {
       setTestResult({ ok: false, msg: err.message });
-    } finally {
-      setTesting(false);
-    }
+    } finally { setTesting(false); }
   }, [aiSettings]);
 
   const requestNotifications = useCallback(async () => {
     const granted = await requestNotificationPermission();
     if (granted) { showToast('Notifications enabled', 'success'); handleSettingChange('notificationsEnabled', true); }
-    else showToast('Notification permission denied', 'error');
+    else showToast('Permission denied', 'error');
   }, [handleSettingChange]);
 
   const checkStorage = useCallback(async () => {
@@ -67,109 +63,99 @@ export default function Settings() {
 
   return (
     <div className={styles.container}>
-      <h1 className={styles.title}>Settings</h1>
+      <motion.h1 className={styles.title} initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }}>
+        Settings
+      </motion.h1>
 
-      {/* AI PROVIDER */}
+      {/* ── AI PROVIDER ── */}
       <Section title="AI Provider" icon="🤖">
-        <div className={styles.field}>
-          <label className={styles.label}>Provider</label>
+        <FieldRow label="Provider">
           <select className={styles.select} value={aiSettings.provider}
             onChange={e => handleAiChange('provider', e.target.value)}>
-            <option value={AI_PROVIDER.NONE}>None (local only)</option>
-            <option value={AI_PROVIDER.OLLAMA}>Ollama (local)</option>
+            <option value={AI_PROVIDER.NONE}>None (offline only)</option>
+            <option value={AI_PROVIDER.OLLAMA}>Ollama (local AI)</option>
             <option value={AI_PROVIDER.OPENAI_COMPAT}>OpenAI-compatible API</option>
             <option value={AI_PROVIDER.CUSTOM}>Custom endpoint</option>
           </select>
-        </div>
+        </FieldRow>
 
         <AnimatePresence mode="wait">
           {aiSettings.provider === AI_PROVIDER.OLLAMA && (
-            <motion.div key="ollama" className={styles.providerFields}
-              initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}>
-              <div className={styles.field}>
-                <label className={styles.label}>Ollama URL</label>
+            <motion.div key="ollama" className={styles.providerBlock}
+              initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
+              <FieldRow label="Ollama URL">
                 <input className={styles.input} placeholder="http://localhost:11434"
                   value={aiSettings.ollamaUrl} onChange={e => handleAiChange('ollamaUrl', e.target.value)} />
-              </div>
-              <div className={styles.field}>
-                <label className={styles.label}>Model name</label>
-                <input className={styles.input} placeholder="e.g. llama3, mistral, gemma"
+              </FieldRow>
+              <FieldRow label="Model">
+                <input className={styles.input} placeholder="llama3, mistral, gemma…"
                   value={aiSettings.ollamaModel} onChange={e => handleAiChange('ollamaModel', e.target.value)} />
-              </div>
-              <p className={styles.hint}>
-                Run Ollama locally: <code>ollama serve</code> then <code>ollama pull llama3</code>
-              </p>
+              </FieldRow>
+              <p className={styles.hint}>Run: <code>ollama serve</code> + <code>ollama pull llama3</code></p>
             </motion.div>
           )}
 
           {aiSettings.provider === AI_PROVIDER.OPENAI_COMPAT && (
-            <motion.div key="openai" className={styles.providerFields}
-              initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}>
-              <div className={styles.field}>
-                <label className={styles.label}>Base URL</label>
+            <motion.div key="openai" className={styles.providerBlock}
+              initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
+              <FieldRow label="Base URL">
                 <input className={styles.input} placeholder="https://api.openai.com/v1"
                   value={aiSettings.openaiCompatUrl} onChange={e => handleAiChange('openaiCompatUrl', e.target.value)} />
-              </div>
-              <div className={styles.field}>
-                <label className={styles.label}>API Key</label>
-                <input className={styles.input} type="password" placeholder="sk-..."
+              </FieldRow>
+              <FieldRow label="API Key">
+                <input className={styles.input} type="password" placeholder="sk-…"
                   value={aiSettings.openaiCompatKey} onChange={e => handleAiChange('openaiCompatKey', e.target.value)} />
-              </div>
-              <div className={styles.field}>
-                <label className={styles.label}>Model</label>
-                <input className={styles.input} placeholder="gpt-4o, claude-3-haiku, etc."
+              </FieldRow>
+              <FieldRow label="Model">
+                <input className={styles.input} placeholder="gpt-4o, claude-3-haiku…"
                   value={aiSettings.openaiCompatModel} onChange={e => handleAiChange('openaiCompatModel', e.target.value)} />
-              </div>
+              </FieldRow>
             </motion.div>
           )}
 
           {aiSettings.provider === AI_PROVIDER.CUSTOM && (
-            <motion.div key="custom" className={styles.providerFields}
-              initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}>
-              <div className={styles.field}>
-                <label className={styles.label}>Endpoint URL</label>
-                <input className={styles.input} placeholder="https://your-api.example.com/v1/chat"
+            <motion.div key="custom" className={styles.providerBlock}
+              initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
+              <FieldRow label="Endpoint URL">
+                <input className={styles.input} placeholder="https://your-api.example.com/chat"
                   value={aiSettings.customUrl} onChange={e => handleAiChange('customUrl', e.target.value)} />
-              </div>
-              <div className={styles.field}>
-                <label className={styles.label}>Model</label>
+              </FieldRow>
+              <FieldRow label="Model">
                 <input className={styles.input} placeholder="model name"
                   value={aiSettings.customModel} onChange={e => handleAiChange('customModel', e.target.value)} />
-              </div>
-              <div className={styles.field}>
-                <label className={styles.label}>Headers (JSON)</label>
-                <textarea className={styles.textarea} placeholder='{"Authorization": "Bearer token"}'
-                  value={aiSettings.customHeaders} onChange={e => handleAiChange('customHeaders', e.target.value)} rows={2} />
-              </div>
+              </FieldRow>
+              <FieldRow label="Headers (JSON)">
+                <textarea className={styles.textarea}
+                  placeholder='{"Authorization": "Bearer token"}'
+                  value={aiSettings.customHeaders}
+                  onChange={e => handleAiChange('customHeaders', e.target.value)} rows={2} />
+              </FieldRow>
             </motion.div>
           )}
         </AnimatePresence>
 
         {aiSettings.provider !== AI_PROVIDER.NONE && (
           <>
-            <div className={styles.field}>
-              <label className={styles.label}>System prompt</label>
+            <FieldRow label="System prompt">
               <textarea className={styles.textarea}
                 placeholder="You are a warm, emotionally intelligent presence for my dog…"
                 value={aiSettings.systemPrompt}
                 onChange={e => handleAiChange('systemPrompt', e.target.value)} rows={3} />
-            </div>
-            <div className={styles.inlineFields}>
-              <div className={styles.field}>
-                <label className={styles.label}>Temperature ({aiSettings.temperature})</label>
-                <input type="range" min="0" max="1" step="0.05" className={styles.range}
-                  value={aiSettings.temperature} onChange={e => handleAiChange('temperature', parseFloat(e.target.value))} />
-              </div>
-              <div className={styles.field}>
-                <label className={styles.label}>Max tokens</label>
-                <input className={styles.input} type="number" min="50" max="2000"
-                  value={aiSettings.maxTokens} onChange={e => handleAiChange('maxTokens', parseInt(e.target.value))} />
-              </div>
-            </div>
+            </FieldRow>
+            <FieldRow label={`Temperature — ${aiSettings.temperature}`}>
+              <input type="range" min="0" max="1" step="0.05" className={styles.range}
+                value={aiSettings.temperature}
+                onChange={e => handleAiChange('temperature', parseFloat(e.target.value))} />
+            </FieldRow>
+            <FieldRow label="Max tokens">
+              <input className={styles.input} type="number" min="50" max="2000"
+                value={aiSettings.maxTokens}
+                onChange={e => handleAiChange('maxTokens', parseInt(e.target.value))} />
+            </FieldRow>
           </>
         )}
 
-        <div className={styles.aiActions}>
+        <div className={styles.actionRow}>
           <button className={styles.btnSecondary} onClick={saveAiSettings}>Save</button>
           {aiSettings.provider !== AI_PROVIDER.NONE && (
             <button className={styles.btnPrimary} onClick={testConnection} disabled={testing}>
@@ -179,78 +165,92 @@ export default function Settings() {
         </div>
 
         {testResult && (
-          <div className={`${styles.testResult} ${testResult.ok ? styles.ok : styles.fail}`}>
-            {testResult.ok ? '✓' : '✗'} {testResult.msg}
-          </div>
+          <motion.div
+            className={`${styles.testResult} ${testResult.ok ? styles.testOk : styles.testFail}`}
+            initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }}
+          >
+            {testResult.ok ? '✦' : '✗'} {testResult.msg}
+          </motion.div>
         )}
       </Section>
 
-      {/* APP PREFERENCES */}
+      {/* ── PREFERENCES ── */}
       <Section title="Preferences" icon="⚙">
-        <ToggleRow
-          label="Reduced motion"
-          description="Simplify animations"
+        <ToggleRow label="Reduced motion" sub="Simplify animations"
           value={settings.reducedMotion}
-          onChange={v => handleSettingChange('reducedMotion', v)}
-        />
-        <ToggleRow
-          label="Notifications"
-          description="Allow reminders and alerts"
+          onChange={v => handleSettingChange('reducedMotion', v)} />
+        <ToggleRow label="Notifications" sub="Reminders and alerts"
           value={settings.notificationsEnabled}
-          onChange={requestNotifications}
-        />
+          onChange={requestNotifications} />
       </Section>
 
-      {/* STORAGE */}
+      {/* ── STORAGE ── */}
       <Section title="Storage" icon="💾">
-        <button className={styles.btnSecondary} onClick={checkStorage}>Check storage usage</button>
+        <button className={styles.btnSecondary} onClick={checkStorage}>
+          Check storage usage
+        </button>
         {storageInfo && (
           <div className={styles.storageInfo}>
-            <span>Used: {(storageInfo.used / (1024*1024)).toFixed(1)} MB</span>
-            <span>Quota: {(storageInfo.quota / (1024*1024*1024)).toFixed(1)} GB</span>
-            <span>{storageInfo.percentUsed}% used</span>
+            <div className={styles.storageStat}>
+              <span className={styles.storageVal}>{(storageInfo.used / (1024*1024)).toFixed(1)} MB</span>
+              <span className={styles.storageLabel}>Used</span>
+            </div>
+            <div className={styles.storageDivider} />
+            <div className={styles.storageStat}>
+              <span className={styles.storageVal}>{(storageInfo.quota / (1024*1024*1024)).toFixed(1)} GB</span>
+              <span className={styles.storageLabel}>Quota</span>
+            </div>
           </div>
         )}
-        <p className={styles.hint}>All data is stored locally on your device. Nothing is sent to any server.</p>
       </Section>
 
-      {/* ABOUT */}
+      {/* ── ABOUT ── */}
       <Section title="About" icon="✦">
-        <p className={styles.aboutText}>IMMORTAIL™ v1.0.0</p>
-        <p className={styles.aboutText}>Your dog, forever.</p>
-        <p className={styles.hint}>Built offline-first. Your data never leaves your device.</p>
+        <div className={styles.aboutBlock}>
+          <span className={styles.aboutLogo}>IMMORTAIL™</span>
+          <span className={styles.aboutSub}>Your dog, forever.</span>
+          <span className={styles.aboutVer}>Version 1.0.0 · Offline-first PWA</span>
+        </div>
       </Section>
     </div>
   );
 }
+
+// ── SUB-COMPONENTS ──────────────────────────────────────────────
 
 function Section({ title, icon, children }) {
   return (
-    <div className={styles.section}>
+    <motion.div className={styles.section}
+      initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
       <div className={styles.sectionHeader}>
         <span className={styles.sectionIcon}>{icon}</span>
-        <h2 className={styles.sectionTitle}>{title}</h2>
+        <span className={styles.sectionTitle}>{title}</span>
       </div>
       <div className={styles.sectionBody}>{children}</div>
+    </motion.div>
+  );
+}
+
+function FieldRow({ label, children }) {
+  return (
+    <div className={styles.fieldRow}>
+      <label className={styles.fieldLabel}>{label}</label>
+      {children}
     </div>
   );
 }
 
-function ToggleRow({ label, description, value, onChange }) {
+function ToggleRow({ label, sub, value, onChange }) {
   return (
     <div className={styles.toggleRow}>
-      <div>
-        <div className={styles.toggleLabel}>{label}</div>
-        {description && <div className={styles.toggleDesc}>{description}</div>}
+      <div className={styles.toggleInfo}>
+        <span className={styles.toggleLabel}>{label}</span>
+        {sub && <span className={styles.toggleSub}>{sub}</span>}
       </div>
-      <button
-        className={`${styles.toggle} ${value ? styles.toggleOn : ''}`}
-        onClick={() => onChange(!value)}
-        role="switch"
-        aria-checked={value}
-      >
-        <motion.div className={styles.toggleThumb} layout transition={{ type: 'spring', stiffness: 500, damping: 30 }} />
-      </button>
+      <label className={styles.toggle}>
+        <input type="checkbox" checked={!!value} onChange={e => onChange(e.target.checked)} />
+        <span className={styles.toggleSlider} />
+      </label>
     </div>
   );
 }
