@@ -2,6 +2,8 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
 
+const isCI = process.env.CI === 'true';
+
 export default defineConfig({
   plugins: [
     react(),
@@ -32,6 +34,7 @@ export default defineConfig({
       }
     })
   ],
+  base: isCI ? '/Immortailv2/' : '/',
   resolve: {
     alias: { '@': '/src' }
   },
