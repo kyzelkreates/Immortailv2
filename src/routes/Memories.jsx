@@ -1,269 +1,250 @@
 // ================================================================
-// IMMORTAIL™ — MEMORIES ROUTE
-// Metallic gold/silver on black. Browse, create, star memories.
+// IMMORTAIL™ — MEMORIES SANCTUARY
+// Not a photo gallery. A sacred emotional archive.
+// Soft. Reflective. Cinematic. Intimate.
 // ================================================================
 
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { loadMemoriesForDog as loadMemories, createMemory, deleteMemory, updateMemory } from '@/systems/memorySystem/memorySystem.js';
 import { getState } from '@/core/storage.js';
-import { eventBus } from '@/core/eventBus.js';
-import { EVENT } from '@/core/constants.js';
-import {
-  createMemory, loadMemoriesForDog, deleteMemory, updateMemory, searchMemories
-} from '@/systems/memorySystem/memorySystem.js';
 import { showToast } from '@/ui/feedback/Toast.jsx';
 import styles from './Memories.module.css';
 
+const MEMORY_TYPES = [
+  { id: 'moment',  label: 'Moment',  emoji: '✨' },
+  { id: 'story',   label: 'Story',   emoji: '📖' },
+  { id: 'feeling', label: 'Feeling', emoji: '💛' },
+  { id: 'funny',   label: 'Funny',   emoji: '😄' },
+  { id: 'first',   label: 'First',   emoji: '🌟' },
+];
+
 export default function Memories() {
-  const [dog] = useState(getState().activeDog);
   const [memories, setMemories] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [filtered, setFiltered] = useState([]);
-  const [selected, setSelected] = useState(null);
-  const [form, setForm] = useState({ title: '', note: '', tags: '', date: '' });
+  const [selectedMemory, setSelectedMemory] = useState(null);
+  const [form, setForm] = useState({ title: '', content: '', type: 'moment', date: '' });
+  const [saving, setSaving] = useState(false);
+  const [filter, setFilter] = useState('all');
+
+  const dog = getState().activeDog;
 
   useEffect(() => {
     if (!dog) return;
-    setLoading(true);
-    loadMemoriesForDog(dog.id)
-      .then(mems => { setMemories(mems); setFiltered(mems); })
-      .catch(() => {})
+    loadMemories(dog.id)
+      .then(m => setMemories(m || []))
+      .catch(() => setMemories([]))
       .finally(() => setLoading(false));
   }, [dog?.id]);
 
-  useEffect(() => {
-    const off = eventBus.on(EVENT.MEMORY_SAVED, () => {
-      if (dog) loadMemoriesForDog(dog.id).then(mems => {
-        setMemories(mems);
-        setFiltered(applyFilter(mems, searchQuery));
-      });
-    });
-    return off;
-  }, [dog?.id, searchQuery]);
-
-  const applyFilter = (mems, q) => {
-    if (!q.trim()) return mems;
-    const lq = q.toLowerCase();
-    return mems.filter(m =>
-      m.title?.toLowerCase().includes(lq) ||
-      m.note?.toLowerCase().includes(lq) ||
-      m.tags?.some(t => t.toLowerCase().includes(lq))
-    );
-  };
-
-  const handleSearch = useCallback((q) => {
-    setSearchQuery(q);
-    if (!q.trim()) { setFiltered(memories); return; }
-    searchMemories(q).then(r => setFiltered(r.length ? r : applyFilter(memories, q)));
-  }, [memories]);
-
-  const handleCreate = useCallback(async () => {
-    if (!dog || (!form.note.trim() && !form.title.trim())) {
-      showToast('Add a title or note', 'error'); return;
+  const handleSave = useCallback(async () => {
+    if (!form.title.trim() || !form.content.trim()) {
+      showToast('Title and memory are required', 'error'); return;
     }
+    setSaving(true);
     try {
-      const tags = form.tags.split(',').map(t => t.trim()).filter(Boolean);
-      await createMemory(dog.id, {
-        title: form.title, note: form.note, tags,
-        date: form.date ? new Date(form.date).getTime() : Date.now(),
-        type: 'note',
-      });
-      setForm({ title: '', note: '', tags: '', date: '' });
+      const saved = await createMemory(dog.id, form);
+      setMemories(m => [saved, ...m]);
+      setForm({ title: '', content: '', type: 'moment', date: '' });
       setCreating(false);
-      showToast('Memory saved ✦', 'success');
-    } catch (err) { showToast(`Failed: ${err.message}`, 'error'); }
-  }, [dog, form]);
+      showToast('Memory preserved ✦', 'success');
+    } catch (err) { showToast(err.message, 'error'); }
+    finally { setSaving(false); }
+  }, [form, dog?.id]);
 
   const handleDelete = useCallback(async (id) => {
     try {
       await deleteMemory(id);
-      setMemories(m => m.filter(x => x.id !== id));
-      setFiltered(m => m.filter(x => x.id !== id));
-      setSelected(null);
-      showToast('Memory removed', 'success');
-    } catch { showToast('Failed to remove', 'error'); }
+      setMemories(m => m.filter(mem => mem.id !== id));
+      setSelectedMemory(null);
+      showToast('Memory released', 'success');
+    } catch (err) { showToast(err.message, 'error'); }
   }, []);
 
-  const handleToggleStar = useCallback(async (memory) => {
+  const handleStar = useCallback(async (memory) => {
     try {
       const updated = await updateMemory(memory.id, { starred: !memory.starred });
-      const update = m => m.map(x => x.id === memory.id ? updated : x);
-      setMemories(update); setFiltered(update);
-      if (selected?.id === memory.id) setSelected(updated);
+      setMemories(m => m.map(mem => mem.id === memory.id ? { ...mem, starred: updated.starred } : mem));
+      if (selectedMemory?.id === memory.id) setSelectedMemory(s => ({ ...s, starred: updated.starred }));
     } catch {}
-  }, [selected]);
+  }, [selectedMemory]);
 
-  if (!dog) return <div className={styles.empty}><span>🐾</span><p>No companion loaded.</p></div>;
+  const filtered = filter === 'starred'
+    ? memories.filter(m => m.starred)
+    : filter === 'all' ? memories : memories.filter(m => m.type === filter);
 
   return (
-    <div className={styles.container}>
+    <div className={styles.sanctuary}>
 
       {/* HEADER */}
-      <motion.div className={styles.header} initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }}>
-        <h1 className={styles.title}>Memories</h1>
+      <motion.div className={styles.header}
+        initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
+        <div className={styles.headerLeft}>
+          <h1 className={styles.title}>Memories</h1>
+          {dog && <span className={styles.subtitle}>{dog.name}'s story, preserved forever</span>}
+        </div>
         <motion.button
           className={styles.addBtn}
           onClick={() => setCreating(c => !c)}
-          whileTap={{ scale: 0.88 }}
-          animate={{ rotate: creating ? 45 : 0 }}
-          transition={{ duration: 0.2 }}
-        >+</motion.button>
+          whileTap={{ scale: 0.9 }}
+          animate={creating ? { rotate: 45 } : { rotate: 0 }}
+          transition={{ duration: 0.3 }}
+        >
+          +
+        </motion.button>
       </motion.div>
 
       {/* CREATE FORM */}
       <AnimatePresence>
         {creating && (
-          <motion.div
-            className={styles.createForm}
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 'auto', opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.28 }}
-          >
-            <div className={styles.formInner}>
-              <input className={styles.formInput} placeholder="Title (optional)"
-                value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))} />
-              <textarea className={styles.formTextarea} placeholder="What do you remember…"
-                value={form.note} onChange={e => setForm(f => ({ ...f, note: e.target.value }))} rows={3} />
-              <div className={styles.formRow}>
-                <input className={styles.formInput} placeholder="Tags, comma separated"
-                  value={form.tags} onChange={e => setForm(f => ({ ...f, tags: e.target.value }))} />
-                <input className={styles.formInput} type="date"
-                  value={form.date} onChange={e => setForm(f => ({ ...f, date: e.target.value }))} />
+          <motion.div className={styles.createPanel}
+            initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }} transition={{ duration: 0.4, ease: [0.16,1,0.3,1] }}>
+            <div className={styles.createForm}>
+              {/* Type selector */}
+              <div className={styles.typeRow}>
+                {MEMORY_TYPES.map(t => (
+                  <button key={t.id}
+                    className={`${styles.typeChip} ${form.type === t.id ? styles.typeChipActive : ''}`}
+                    onClick={() => setForm(f => ({ ...f, type: t.id }))}>
+                    {t.emoji} {t.label}
+                  </button>
+                ))}
               </div>
-              <motion.button className={styles.saveBtn} onClick={handleCreate} whileTap={{ scale: 0.95 }}>
-                Save Memory
-              </motion.button>
+
+              <input className={styles.input} placeholder="A title for this memory…"
+                value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))} />
+
+              <textarea className={styles.textarea}
+                placeholder="Write what you remember… how it felt, what they did, what made it special…"
+                value={form.content} onChange={e => setForm(f => ({ ...f, content: e.target.value }))} rows={5} />
+
+              <input className={styles.input} type="date" value={form.date}
+                onChange={e => setForm(f => ({ ...f, date: e.target.value }))} />
+
+              <div className={styles.formActions}>
+                <button className={styles.btnSecondary} onClick={() => setCreating(false)}>Cancel</button>
+                <motion.button className={styles.btnPrimary} onClick={handleSave}
+                  disabled={saving} whileTap={{ scale: 0.95 }}>
+                  {saving ? 'Preserving…' : 'Preserve memory'}
+                </motion.button>
+              </div>
             </div>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* SEARCH */}
-      <div className={styles.searchBar}>
-        <span className={styles.searchIcon}>⌕</span>
-        <input className={styles.searchInput} placeholder="Search memories…"
-          value={searchQuery} onChange={e => handleSearch(e.target.value)} />
-      </div>
-
-      {/* CONTENT */}
-      {loading ? (
-        <div className={styles.empty}>
-          <motion.div animate={{ opacity: [0.3, 1, 0.3] }} transition={{ duration: 1.5, repeat: Infinity }}>
-            <span className={styles.emptyIcon}>🐾</span>
-          </motion.div>
-        </div>
-      ) : filtered.length === 0 ? (
-        <div className={styles.empty}>
-          <span className={styles.emptyIcon}>🕯️</span>
-          <p className={styles.emptyText}>
-            {searchQuery ? 'No matching memories' : `Start capturing ${dog.name}'s moments`}
-          </p>
-        </div>
-      ) : (
-        <motion.div className={styles.grid} layout>
-          <AnimatePresence>
-            {filtered.map((memory, i) => (
-              <MemoryCard
-                key={memory.id}
-                memory={memory}
-                index={i}
-                onClick={() => setSelected(memory)}
-                onStar={() => handleToggleStar(memory)}
-              />
-            ))}
-          </AnimatePresence>
+      {/* FILTER BAR */}
+      {memories.length > 0 && (
+        <motion.div className={styles.filterBar}
+          initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }}>
+          {[
+            { id: 'all', label: 'All' },
+            { id: 'starred', label: '✦ Cherished' },
+            ...MEMORY_TYPES.map(t => ({ id: t.type, label: t.emoji })),
+          ].map(f => (
+            <button key={f.id}
+              className={`${styles.filterChip} ${filter === f.id ? styles.filterChipActive : ''}`}
+              onClick={() => setFilter(f.id)}>
+              {f.label}
+            </button>
+          ))}
         </motion.div>
       )}
 
-      {/* DETAIL MODAL */}
-      <AnimatePresence>
-        {selected && (
-          <motion.div className={styles.detailOverlay}
-            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            onClick={() => setSelected(null)}
-          >
-            <motion.div className={styles.detailCard}
-              initial={{ y: 60, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 60, opacity: 0 }}
-              transition={{ type: 'spring', stiffness: 320, damping: 30 }}
-              onClick={e => e.stopPropagation()}
+      {/* MEMORY GRID */}
+      {loading ? (
+        <div className={styles.loadingState}>
+          {[0,1,2].map(i => (
+            <motion.div key={i} className={styles.loadingCard}
+              animate={{ opacity: [0.3, 0.6, 0.3] }}
+              transition={{ duration: 1.8, repeat: Infinity, delay: i * 0.3 }} />
+          ))}
+        </div>
+      ) : filtered.length === 0 ? (
+        <motion.div className={styles.emptyState}
+          initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}>
+          <span className={styles.emptyPaw}>🐾</span>
+          <span className={styles.emptyTitle}>
+            {memories.length === 0 ? 'No memories yet' : 'None in this collection'}
+          </span>
+          <span className={styles.emptyDesc}>
+            {memories.length === 0
+              ? `Every moment with ${dog?.name || 'them'} deserves to live on. Add your first memory.`
+              : 'Try a different filter.'}
+          </span>
+        </motion.div>
+      ) : (
+        <motion.div className={styles.grid}
+          initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }}>
+          {filtered.map((mem, i) => (
+            <motion.div key={mem.id} className={styles.memoryCard}
+              initial={{ opacity: 0, y: 14 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: i * 0.06, duration: 0.5, ease: [0.16,1,0.3,1] }}
+              onClick={() => setSelectedMemory(mem)}
+              whileTap={{ scale: 0.97 }}
             >
-              {/* Gold line top */}
-              <div className={styles.detailGoldLine} />
+              <div className={styles.cardAccent} />
+              <div className={styles.cardHeader}>
+                <span className={styles.cardType}>{MEMORY_TYPES.find(t => t.id === mem.type)?.emoji || '✨'}</span>
+                {mem.starred && <span className={styles.cardStar}>✦</span>}
+              </div>
+              <h3 className={styles.cardTitle}>{mem.title}</h3>
+              <p className={styles.cardPreview}>{mem.content}</p>
+              {mem.date && <span className={styles.cardDate}>{mem.date}</span>}
+            </motion.div>
+          ))}
+        </motion.div>
+      )}
 
-              <div className={styles.detailHeader}>
-                <h2 className={styles.detailTitle}>{selected.title || 'Memory'}</h2>
-                <button className={styles.closeBtn} onClick={() => setSelected(null)}>✕</button>
+      {/* MEMORY DETAIL — cinematic bottom sheet */}
+      <AnimatePresence>
+        {selectedMemory && (
+          <motion.div className={styles.backdrop}
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            onClick={() => setSelectedMemory(null)}>
+            <motion.div className={styles.sheet}
+              initial={{ y: '100%', opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: '100%', opacity: 0 }}
+              transition={{ type: 'spring', stiffness: 260, damping: 32 }}
+              onClick={e => e.stopPropagation()}>
+
+              <div className={styles.sheetHandle} />
+              <div className={styles.sheetAccent} />
+
+              <div className={styles.sheetHeader}>
+                <span className={styles.sheetType}>
+                  {MEMORY_TYPES.find(t => t.id === selectedMemory.type)?.emoji || '✨'}
+                  {' '}
+                  {MEMORY_TYPES.find(t => t.id === selectedMemory.type)?.label}
+                </span>
+                {selectedMemory.date && <span className={styles.sheetDate}>{selectedMemory.date}</span>}
               </div>
 
-              {selected.date && (
-                <p className={styles.detailDate}>
-                  {new Date(selected.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}
-                </p>
-              )}
+              <h2 className={styles.sheetTitle}>{selectedMemory.title}</h2>
+              <p className={styles.sheetContent}>{selectedMemory.content}</p>
 
-              {selected.note && <p className={styles.detailNote}>{selected.note}</p>}
-
-              {selected.tags?.length > 0 && (
-                <div className={styles.tagRow}>
-                  {selected.tags.map(tag => <span key={tag} className={styles.tag}>{tag}</span>)}
-                </div>
-              )}
-
-              <div className={styles.detailActions}>
-                <button className={`${styles.detailBtn} ${selected.starred ? styles.starred : ''}`}
-                  onClick={() => handleToggleStar(selected)}>
-                  {selected.starred ? '★ Starred' : '☆ Star'}
-                </button>
-                <button className={`${styles.detailBtn} ${styles.danger}`}
-                  onClick={() => handleDelete(selected.id)}>
-                  Remove
-                </button>
+              <div className={styles.sheetActions}>
+                <motion.button
+                  className={`${styles.sheetBtn} ${selectedMemory.starred ? styles.sheetBtnStarred : ''}`}
+                  onClick={() => handleStar(selectedMemory)}
+                  whileTap={{ scale: 0.9 }}>
+                  {selectedMemory.starred ? '✦ Cherished' : '✦ Cherish'}
+                </motion.button>
+                <motion.button
+                  className={`${styles.sheetBtn} ${styles.sheetBtnDanger}`}
+                  onClick={() => handleDelete(selectedMemory.id)}
+                  whileTap={{ scale: 0.9 }}>
+                  Release
+                </motion.button>
               </div>
             </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
     </div>
-  );
-}
-
-// ── MEMORY CARD ──────────────────────────────────────────────────
-function MemoryCard({ memory, index, onClick, onStar }) {
-  const date = memory.date
-    ? new Date(memory.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
-    : null;
-  return (
-    <motion.div
-      className={styles.memoryCard}
-      onClick={onClick}
-      initial={{ opacity: 0, y: 12 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, scale: 0.95 }}
-      transition={{ delay: index * 0.04 }}
-      whileTap={{ scale: 0.97 }}
-      layout
-    >
-      <div className={styles.cardTop}>
-        {memory.title && <h3 className={styles.cardTitle}>{memory.title}</h3>}
-        <button
-          className={`${styles.starBtn} ${memory.starred ? styles.starActive : ''}`}
-          onClick={e => { e.stopPropagation(); onStar(); }}
-        >
-          {memory.starred ? '★' : '☆'}
-        </button>
-      </div>
-      {memory.note && <p className={styles.cardNote}>{memory.note}</p>}
-      <div className={styles.cardBottom}>
-        {date && <span className={styles.cardDate}>{date}</span>}
-        {memory.tags?.length > 0 && (
-          <div className={styles.cardTags}>
-            {memory.tags.slice(0, 2).map(t => <span key={t} className={styles.tag}>{t}</span>)}
-          </div>
-        )}
-      </div>
-    </motion.div>
   );
 }

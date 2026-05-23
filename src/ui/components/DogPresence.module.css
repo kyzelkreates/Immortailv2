@@ -1,60 +1,100 @@
 .container {
   position: relative;
   width: 100%;
-  height: 100%;
+  aspect-ratio: 1;
+  border-radius: 50%;
   cursor: pointer;
-  user-select: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: visible;
+  /* This is the emotional heart — treat it with reverence */
 }
 
 .canvas {
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
-  display: block;
+  border-radius: 50%;
 }
 
-.nameFallback {
+/* Outer glow ring — slow emotional breathing */
+.glowRing {
+  position: absolute;
+  inset: -8%;
+  border-radius: 50%;
+  border: 1px solid transparent;
+  animation: glowBreathe 4s ease-in-out infinite;
+  pointer-events: none;
+  transition: box-shadow 2s ease, border-color 2s ease;
+}
+
+/* Inner breath ring */
+.breathRing {
+  position: absolute;
+  inset: -4%;
+  border-radius: 50%;
+  border: 1px solid transparent;
+  animation: glowBreathe 4s ease-in-out infinite 1s;
+  pointer-events: none;
+  transition: border-color 2s ease;
+}
+
+/* Tap ripple effect */
+.ripple {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 1.5px solid transparent;
+  transform: translate(-50%, -50%);
+  animation: rippleOut 0.9s ease-out forwards;
+  pointer-events: none;
+}
+
+/* Tap pulse overlay */
+.tapPulse {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+/* Fallback — no photo */
+.fallback {
   position: absolute;
   inset: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 12px;
-  pointer-events: none;
+  gap: 8px;
 }
 
 .paw {
-  font-size: 56px;
-  animation: float 3s ease-in-out infinite;
-  filter: drop-shadow(0 0 24px rgba(201,162,39,0.6));
+  font-size: 52px;
+  filter: drop-shadow(0 0 20px rgba(201,162,39,0.5));
+  display: flex;
 }
 
-.name {
-  font-size: 22px;
-  font-weight: 800;
-  letter-spacing: 0.12em;
+.fallbackName {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
   text-transform: uppercase;
-  background: linear-gradient(135deg, #ffd700 0%, #c9a227 40%, #fffacd 60%, #c9a227 100%);
+  background: var(--silver-gradient);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
 
-/* Ripple on tap */
-.ripple {
-  position: absolute;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(201,162,39,0.4) 0%, transparent 70%);
-  transform: scale(0);
-  animation: ripple-out 0.6s ease-out forwards;
-  pointer-events: none;
+@keyframes glowBreathe {
+  0%, 100% { transform: scale(1);    opacity: 0.6; }
+  50%       { transform: scale(1.04); opacity: 1; }
 }
 
-@keyframes ripple-out {
-  to { transform: scale(4); opacity: 0; }
-}
-
-@keyframes float {
-  0%, 100% { transform: translateY(0); }
-  50%       { transform: translateY(-10px); }
+@keyframes rippleOut {
+  from { width: 20px; height: 20px; opacity: 1; }
+  to   { width: 160px; height: 160px; opacity: 0; }
 }

@@ -1,6 +1,6 @@
 /* ================================================================
    IMMORTAIL™ — GLOBAL STYLES
-   Metallic gold & silver on deep black. Premium. Emotional.
+   Cinematic emotional world. Living presence. Deep immersion.
    ================================================================ */
 
 *, *::before, *::after {
@@ -9,43 +9,67 @@
 }
 
 :root {
-  /* Core blacks */
-  --black-deep:    #030305;
-  --black-rich:    #080810;
-  --black-surface: #0e0e1a;
-  --black-card:    #121220;
-  --black-raised:  #181828;
+  /* Core blacks — deep, rich, not flat */
+  --black-deep:    #020208;
+  --black-rich:    #06060f;
+  --black-surface: #0a0a18;
+  --black-card:    #0d0d1e;
+  --black-raised:  #131328;
+  --black-glass:   rgba(8,8,20,0.72);
+  --black-glass-light: rgba(16,16,36,0.55);
 
-  /* Metallic gold */
+  /* Metallic gold — warm, alive */
   --gold-bright:   #ffd700;
   --gold-mid:      #c9a227;
   --gold-dark:     #8b6914;
-  --gold-glow:     rgba(201,162,39,0.25);
-  --gold-subtle:   rgba(201,162,39,0.08);
+  --gold-glow:     rgba(201,162,39,0.28);
+  --gold-subtle:   rgba(201,162,39,0.07);
   --gold-gradient: linear-gradient(135deg, #ffd700 0%, #c9a227 40%, #a07820 70%, #ffd700 100%);
   --gold-shimmer:  linear-gradient(105deg, #8b6914 0%, #ffd700 30%, #fffacd 50%, #ffd700 70%, #8b6914 100%);
 
   /* Metallic silver */
-  --silver-bright:  #e8e8e8;
-  --silver-mid:     #b0b0b8;
-  --silver-dark:    #6a6a78;
-  --silver-glow:    rgba(176,176,184,0.2);
-  --silver-subtle:  rgba(176,176,184,0.06);
-  --silver-gradient: linear-gradient(135deg, #e8e8e8 0%, #b0b0b8 40%, #7a7a88 70%, #e8e8e8 100%);
+  --silver-bright:   #e8e8ee;
+  --silver-mid:      #a8a8b8;
+  --silver-dark:     #585870;
+  --silver-glow:     rgba(176,176,200,0.18);
+  --silver-subtle:   rgba(176,176,200,0.05);
+  --silver-gradient: linear-gradient(135deg, #e8e8ee 0%, #b0b0c0 40%, #707088 70%, #e8e8ee 100%);
+
+  /* Emotional atmosphere colours */
+  --atmo-neutral:  rgba(100,100,160,0.12);
+  --atmo-warm:     rgba(201,162,39,0.10);
+  --atmo-cool:     rgba(80,140,200,0.10);
+  --atmo-loving:   rgba(220,120,160,0.10);
+  --atmo-calm:     rgba(80,180,180,0.08);
+  --atmo-deep:     rgba(80,60,160,0.12);
 
   /* Text */
-  --text-primary:  #f0f0f0;
-  --text-muted:    #6a6a80;
-  --text-ghost:    #2a2a3a;
+  --text-primary:  #eeeef5;
+  --text-muted:    #55556a;
+  --text-ghost:    #1e1e30;
 
-  /* UI */
-  --border-gold:   rgba(201,162,39,0.2);
-  --border-silver: rgba(176,176,184,0.12);
-  --border-ghost:  rgba(255,255,255,0.05);
+  /* UI borders */
+  --border-gold:   rgba(201,162,39,0.18);
+  --border-silver: rgba(176,176,200,0.10);
+  --border-ghost:  rgba(255,255,255,0.04);
+  --border-glow:   rgba(201,162,39,0.35);
 
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  /* Cinematic depths */
+  --depth-1: 0 2px 12px rgba(0,0,0,0.5);
+  --depth-2: 0 8px 32px rgba(0,0,0,0.6), 0 2px 8px rgba(0,0,0,0.4);
+  --depth-3: 0 20px 60px rgba(0,0,0,0.7), 0 4px 16px rgba(0,0,0,0.5);
+  --glow-gold: 0 0 30px rgba(201,162,39,0.25), 0 0 60px rgba(201,162,39,0.10);
+  --glow-gold-soft: 0 0 20px rgba(201,162,39,0.15);
+
+  /* Animation easing */
+  --ease-cinematic: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  --ease-emotional: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-breathe: cubic-bezier(0.45, 0.05, 0.55, 0.95);
+
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }
 
 html, body {
@@ -55,27 +79,140 @@ html, body {
   color: var(--text-primary);
   min-height: 100dvh;
   overscroll-behavior: none;
+  overflow-x: hidden;
 }
 
 #root {
   min-height: 100dvh;
   position: relative;
+  isolation: isolate;
 }
 
+/* ── CINEMATIC GRAIN — subtle depth texture ── */
+#root::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E");
+  opacity: 0.022;
+  pointer-events: none;
+  z-index: 9990;
+  mix-blend-mode: overlay;
+}
+
+/* ── AMBIENT GLOBAL RADIAL LIGHT ── */
+body::before {
+  content: '';
+  position: fixed;
+  top: -20%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 120%;
+  height: 60%;
+  background: radial-gradient(ellipse at 50% 0%,
+    rgba(201,162,39,0.055) 0%,
+    rgba(80,60,140,0.04) 40%,
+    transparent 70%
+  );
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ── PAGE FADE-IN ANIMATION ── */
+@keyframes pageReveal {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.page-enter {
+  animation: pageReveal 0.55s var(--ease-emotional) forwards;
+}
+
+/* ── ROUTE TRANSITION OVERLAY ── */
+.route-fog {
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(ellipse at 50% 40%, rgba(201,162,39,0.06) 0%, var(--black-deep) 70%);
+  z-index: 9000;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.4s var(--ease-cinematic);
+}
+.route-fog.active { opacity: 1; }
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar { width: 2px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(201,162,39,0.25); border-radius: 1px; }
+
+/* ── SELECTION ── */
+::selection { background: rgba(201,162,39,0.25); color: var(--gold-bright); }
+
+/* ── FOCUS ── */
+:focus-visible {
+  outline: 1px solid rgba(201,162,39,0.5);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* ── INPUT ── */
 input[type="date"] { color-scheme: dark; }
 
-::-webkit-scrollbar { width: 3px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: var(--gold-dark); border-radius: 2px; }
-
-::selection { background: rgba(201,162,39,0.3); }
-
-:focus-visible {
-  outline: 1px solid var(--gold-mid);
-  outline-offset: 2px;
+/* ── GLASS UTILITY ── */
+.glass {
+  background: var(--black-glass);
+  backdrop-filter: blur(20px) saturate(1.2);
+  -webkit-backdrop-filter: blur(20px) saturate(1.2);
+  border: 1px solid var(--border-ghost);
 }
 
-/* Metallic text utility */
+.glass-gold {
+  background: rgba(201,162,39,0.04);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--border-gold);
+}
+
+/* ── EMOTIONAL BREATHING ANIMATION ── */
+@keyframes breathe {
+  0%, 100% { transform: scale(1);   opacity: 1; }
+  50%       { transform: scale(1.015); opacity: 0.92; }
+}
+
+@keyframes breatheGlow {
+  0%, 100% { box-shadow: var(--glow-gold-soft); }
+  50%       { box-shadow: var(--glow-gold); }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  33%       { transform: translateY(-6px) translateX(1px); }
+  66%       { transform: translateY(-3px) translateX(-1px); }
+}
+
+@keyframes ambientPulse {
+  0%, 100% { opacity: 0.4; transform: scale(1); }
+  50%       { opacity: 0.7; transform: scale(1.08); }
+}
+
+@keyframes shimmer {
+  0%   { background-position: 0% center; }
+  100% { background-position: 200% center; }
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes particleDrift {
+  0%   { transform: translateY(0) translateX(0) scale(1); opacity: 0; }
+  10%  { opacity: 1; }
+  90%  { opacity: 0.6; }
+  100% { transform: translateY(-80px) translateX(20px) scale(0); opacity: 0; }
+}
+
+/* ── METALLIC TEXT UTILITY ── */
 .text-gold {
   background: var(--gold-shimmer);
   background-size: 200% auto;
@@ -92,22 +229,12 @@ input[type="date"] { color-scheme: dark; }
   background-clip: text;
 }
 
-@keyframes shimmer {
-  0%   { background-position: 0% center; }
-  100% { background-position: 200% center; }
-}
-
-@keyframes pulse-gold {
-  0%, 100% { box-shadow: 0 0 12px var(--gold-glow); }
-  50%       { box-shadow: 0 0 32px rgba(201,162,39,0.5); }
-}
-
-@keyframes float {
-  0%, 100% { transform: translateY(0px); }
-  50%       { transform: translateY(-8px); }
-}
-
-@keyframes orbit {
-  from { transform: rotate(0deg) translateX(90px) rotate(0deg); }
-  to   { transform: rotate(360deg) translateX(90px) rotate(-360deg); }
+/* ── EMOTIONAL GLOW ORBS — ambient lighting ── */
+.glow-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(60px);
+  pointer-events: none;
+  mix-blend-mode: screen;
+  animation: ambientPulse 6s var(--ease-breathe) infinite;
 }
