@@ -1,5 +1,6 @@
 /* ================================================================
    IMMORTAIL™ — GLOBAL STYLES
+   Metallic gold & silver on deep black. Premium. Emotional.
    ================================================================ */
 
 *, *::before, *::after {
@@ -8,24 +9,50 @@
 }
 
 :root {
-  --color-bg:        #0a0a0f;
-  --color-surface:   #13131c;
-  --color-border:    rgba(255,255,255,0.07);
-  --color-text:      #e8e8f0;
-  --color-muted:     #7a7a9a;
-  --color-accent:    #5c5cff;
-  --color-accent-2:  #a855f7;
-  --color-danger:    #e87a7a;
-  --color-success:   #7dd7a0;
+  /* Core blacks */
+  --black-deep:    #030305;
+  --black-rich:    #080810;
+  --black-surface: #0e0e1a;
+  --black-card:    #121220;
+  --black-raised:  #181828;
+
+  /* Metallic gold */
+  --gold-bright:   #ffd700;
+  --gold-mid:      #c9a227;
+  --gold-dark:     #8b6914;
+  --gold-glow:     rgba(201,162,39,0.25);
+  --gold-subtle:   rgba(201,162,39,0.08);
+  --gold-gradient: linear-gradient(135deg, #ffd700 0%, #c9a227 40%, #a07820 70%, #ffd700 100%);
+  --gold-shimmer:  linear-gradient(105deg, #8b6914 0%, #ffd700 30%, #fffacd 50%, #ffd700 70%, #8b6914 100%);
+
+  /* Metallic silver */
+  --silver-bright:  #e8e8e8;
+  --silver-mid:     #b0b0b8;
+  --silver-dark:    #6a6a78;
+  --silver-glow:    rgba(176,176,184,0.2);
+  --silver-subtle:  rgba(176,176,184,0.06);
+  --silver-gradient: linear-gradient(135deg, #e8e8e8 0%, #b0b0b8 40%, #7a7a88 70%, #e8e8e8 100%);
+
+  /* Text */
+  --text-primary:  #f0f0f0;
+  --text-muted:    #6a6a80;
+  --text-ghost:    #2a2a3a;
+
+  /* UI */
+  --border-gold:   rgba(201,162,39,0.2);
+  --border-silver: rgba(176,176,184,0.12);
+  --border-ghost:  rgba(255,255,255,0.05);
+
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 html, body {
   margin: 0;
   padding: 0;
-  background: var(--color-bg);
-  color: var(--color-text);
+  background: var(--black-deep);
+  color: var(--text-primary);
   min-height: 100dvh;
   overscroll-behavior: none;
 }
@@ -35,21 +62,52 @@ html, body {
   position: relative;
 }
 
-/* Input date styling */
-input[type="date"] {
-  color-scheme: dark;
+input[type="date"] { color-scheme: dark; }
+
+::-webkit-scrollbar { width: 3px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--gold-dark); border-radius: 2px; }
+
+::selection { background: rgba(201,162,39,0.3); }
+
+:focus-visible {
+  outline: 1px solid var(--gold-mid);
+  outline-offset: 2px;
 }
 
-/* Scrollbar */
-::-webkit-scrollbar { width: 4px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: 2px; }
+/* Metallic text utility */
+.text-gold {
+  background: var(--gold-shimmer);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: shimmer 4s linear infinite;
+}
 
-/* Selection */
-::selection { background: rgba(92,92,255,0.3); }
+.text-silver {
+  background: var(--silver-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
 
-/* Focus visible */
-:focus-visible {
-  outline: 2px solid rgba(92,92,255,0.6);
-  outline-offset: 2px;
+@keyframes shimmer {
+  0%   { background-position: 0% center; }
+  100% { background-position: 200% center; }
+}
+
+@keyframes pulse-gold {
+  0%, 100% { box-shadow: 0 0 12px var(--gold-glow); }
+  50%       { box-shadow: 0 0 32px rgba(201,162,39,0.5); }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-8px); }
+}
+
+@keyframes orbit {
+  from { transform: rotate(0deg) translateX(90px) rotate(0deg); }
+  to   { transform: rotate(360deg) translateX(90px) rotate(-360deg); }
 }

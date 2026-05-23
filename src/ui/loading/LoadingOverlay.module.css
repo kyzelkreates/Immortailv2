@@ -1,52 +1,60 @@
 .overlay {
   position: fixed;
   inset: 0;
-  z-index: 9999;
-  background: rgba(10, 10, 15, 0.85);
-  backdrop-filter: blur(12px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.card {
+  background: var(--black-deep);
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 16px;
-  padding: 36px 40px;
-  background: rgba(19, 19, 28, 0.95);
-  border: 1px solid rgba(92, 92, 255, 0.2);
-  border-radius: 20px;
-  min-width: 240px;
-  box-shadow: 0 0 40px rgba(92, 92, 255, 0.12);
+  justify-content: center;
+  gap: 24px;
+  z-index: 9998;
+}
+
+.logo {
+  font-size: 48px;
+  font-weight: 900;
+  letter-spacing: 0.18em;
+  background: linear-gradient(105deg, #8b6914 0%, #ffd700 30%, #fffacd 50%, #ffd700 70%, #8b6914 100%);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: shimmer 2.5s linear infinite;
+}
+
+.paw {
+  font-size: 40px;
+  animation: pulse 1.8s ease-in-out infinite;
+  filter: drop-shadow(0 0 20px rgba(201,162,39,0.6));
 }
 
 .spinner {
-  font-size: 36px;
-  display: block;
+  width: 36px;
+  height: 36px;
+  border: 2px solid rgba(201,162,39,0.15);
+  border-top-color: #c9a227;
+  border-radius: 50%;
+  animation: spin 0.9s linear infinite;
 }
 
 .message {
-  color: #c0c0d8;
-  font-size: 14px;
-  font-weight: 500;
-  text-align: center;
-  margin: 0;
-  letter-spacing: 0.01em;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--silver-dark);
 }
 
-.progressBar {
-  width: 160px;
-  height: 3px;
-  background: rgba(255,255,255,0.08);
-  border-radius: 2px;
-  overflow: hidden;
+@keyframes shimmer {
+  0%   { background-position: 0% center; }
+  100% { background-position: 200% center; }
 }
 
-.progressFill {
-  height: 100%;
-  background: linear-gradient(90deg, #5c5cff, #a855f7);
-  border-radius: 2px;
-  width: 0%;
+@keyframes pulse {
+  0%, 100% { transform: scale(1); opacity: 0.8; }
+  50%       { transform: scale(1.12); opacity: 1; }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }

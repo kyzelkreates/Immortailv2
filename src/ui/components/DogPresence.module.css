@@ -2,17 +2,14 @@
   position: relative;
   width: 100%;
   height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  cursor: pointer;
+  user-select: none;
 }
 
 .canvas {
   width: 100%;
   height: 100%;
   display: block;
-  cursor: pointer;
-  touch-action: manipulation;
 }
 
 .nameFallback {
@@ -22,18 +19,42 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  gap: 12px;
   pointer-events: none;
-  gap: 10px;
 }
 
 .paw {
-  font-size: 48px;
-  opacity: 0.5;
+  font-size: 56px;
+  animation: float 3s ease-in-out infinite;
+  filter: drop-shadow(0 0 24px rgba(201,162,39,0.6));
 }
 
 .name {
-  color: rgba(200, 200, 255, 0.6);
-  font-size: 18px;
-  font-weight: 500;
-  letter-spacing: 0.06em;
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  background: linear-gradient(135deg, #ffd700 0%, #c9a227 40%, #fffacd 60%, #c9a227 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Ripple on tap */
+.ripple {
+  position: absolute;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(201,162,39,0.4) 0%, transparent 70%);
+  transform: scale(0);
+  animation: ripple-out 0.6s ease-out forwards;
+  pointer-events: none;
+}
+
+@keyframes ripple-out {
+  to { transform: scale(4); opacity: 0; }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-10px); }
 }
