@@ -1,0 +1,52 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: rgba(10, 10, 15, 0.85);
+  backdrop-filter: blur(12px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 36px 40px;
+  background: rgba(19, 19, 28, 0.95);
+  border: 1px solid rgba(92, 92, 255, 0.2);
+  border-radius: 20px;
+  min-width: 240px;
+  box-shadow: 0 0 40px rgba(92, 92, 255, 0.12);
+}
+
+.spinner {
+  font-size: 36px;
+  display: block;
+}
+
+.message {
+  color: #c0c0d8;
+  font-size: 14px;
+  font-weight: 500;
+  text-align: center;
+  margin: 0;
+  letter-spacing: 0.01em;
+}
+
+.progressBar {
+  width: 160px;
+  height: 3px;
+  background: rgba(255,255,255,0.08);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  background: linear-gradient(90deg, #5c5cff, #a855f7);
+  border-radius: 2px;
+  width: 0%;
+}
